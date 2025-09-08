@@ -1,10 +1,14 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore; 
 using ShoeStoreAPI.Models;
-using ShoeStoreAPI.Data;
+using ShoeStoreAPI.Data; 
+using Microsoft.AspNetCore.Authorization; 
+using Microsoft.AspNetCore.Mvc;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,18 +16,57 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite("Data Source=shoeshop.db"));
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(
+    c =>
+    {
+        c.SwaggerDoc("v1", new() { Title = "Shoe Store API", Version = "v1" });
+        c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Description = "Please enter token",
+            Name = "Authorization",
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "bearer"
+        });
+    }
+);
+var secretKey = "THIS_IS_MY_DEMO_SECRET_KEY_123456";
+
+// 🔑 Custom Authentication ngay trong Program.cs
+builder.Services.AddAuthentication("CustomJwt")
+    .AddScheme<AuthenticationSchemeOptions, CustomJwtHandler>("CustomJwt", null);
+
+
+builder.Services.AddAuthorization(); 
+
 var app = builder.Build();
+//if (app.Environment.IsDevelopment())
+//{
+//app.UseSwagger();
+//app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Shoe Store API V1"));
+//}   
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Shoe Store API V1"));
+
+app.UseHttpsRedirection();
+// ✅ Middleware order: Authentication trước, Authorization sau
+app.UseAuthentication();
+app.UseAuthorization();
+// Endpoint test
+app.MapGet("/ping", () => "pong").AllowAnonymous();
+
 
 // Seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    db.Database.EnsureCreated();
     Seed.EnsureSeed(db);
 }
 
-// JWT Secret
-var secretKey = "THIS_IS_MY_DEMO_SECRET_KEY_123456";
+
 
 // DTOs
 
@@ -99,7 +142,25 @@ app.Use(async (context, next) =>
 });
 
 // API Products
-app.MapGet("/products", async (AppDbContext db) => await db.Products.ToListAsync());
+//app.MapGet("/products", async (AppDbContext db) => await db.Products.ToListAsync());
+
+
+app.MapGet("/products", async (AppDbContext db, ClaimsPrincipal user) =>
+{
+    if (user.Identity?.IsAuthenticated != true)
+        return Results.Unauthorized();
+
+    try
+    {
+        var products = await db.Products.ToListAsync();
+        return Results.Ok(products);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"An error occurred while fetching products: {ex.Message}");
+    }
+});
+
 
 // API Create Order
 app.MapPost("/orders", async (OrderRequest req, AppDbContext db, ClaimsPrincipal user) =>
@@ -135,9 +196,82 @@ app.MapGet("/orders", async (AppDbContext db, ClaimsPrincipal user) =>
         .Where(o => o.User.Email == email)
         .ToListAsync();
 });
-app.Run(); 
-public record LoginRequest(string Email, string Password);
-public record OrderRequest(List<(int ProductId, int Quantity)> Items);
+//Hàm Đăng ký User  
+app.MapPost("/register", async (UserRegisterRequest req, AppDbContext db) =>
+{
+    // Check nếu email đã tồn tại
+    if (await db.Users.AnyAsync(u => u.Email == req.Email))
+    {
+        return Results.BadRequest(new { message = "Email đã tồn tại" });
+    }
+
+    var user = new User
+    {
+        Email = req.Email,
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
+        Role = "customer"
+    };
+
+    db.Users.Add(user);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { message = "Đăng ký thành công", user.Email });
+});
+//Hàm Thêm sản phẩm (Create)
+app.MapPost("/products", async (Product req, AppDbContext db) =>
+{
+    db.Products.Add(req);
+    await db.SaveChangesAsync();
+    return Results.Created($"/products/{req.Id}", req);
+});
+//Lấy danh sách sản phẩm (Read All)
+//app.MapGet("/products", async (AppDbContext db) =>
+//{
+//    return await db.Products.ToListAsync();
+//});
+//Lấy 1 sản phẩm theo Id (Read by Id)
+app.MapGet("/products/{id}", async (int id, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+return product is not null ? Results.Ok(product) : Results.NotFound();
+});
+//Cập nhật sản phẩm (Update)
+app.MapPut("/products/{id}", async (int id, Product req, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+if (product is null) return Results.NotFound();
+
+product.Name = req.Name;
+product.Description = req.Description;
+product.Price = req.Price;
+product.Stock = req.Stock;
+
+await db.SaveChangesAsync();
+return Results.Ok(product);
+});
+//Xóa sản phẩm (Delete)
+app.MapDelete("/products/{id}", async (int id, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+
+    db.Products.Remove(product);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Đã xóa sản phẩm" });
+});
+//Tìm kiếm sản phẩm theo tên (Search)
+app.MapGet("/products/search/{keyword}", async (string keyword, AppDbContext db) =>
+{
+    var products = await db.Products
+        .Where(p => p.Name.Contains(keyword) || p.Description.Contains(keyword))
+        .ToListAsync();
+
+return Results.Ok(products);
+});
+
+
+
+app.Run();  
 
 
 

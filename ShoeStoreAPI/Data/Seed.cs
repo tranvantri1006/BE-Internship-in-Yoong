@@ -1,4 +1,5 @@
-﻿using ShoeStoreAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using ShoeStoreAPI.Data;
 using ShoeStoreAPI.Models;
 
 
@@ -31,8 +32,10 @@ using ShoeStoreAPI.Models;
                     new Product { Name = "Adidas Ultraboost", Price = 150, Stock = 8 }
                 );
                 db.SaveChanges();
+            // Seed data
+           
 
-            }
+        }
         }
     }
 

@@ -10,3 +10,6 @@ public class Order
 
     public List<OrderItem> Items { get; set; } = new();
 }
+
+
+public record OrderRequest(List<(int ProductId, int Quantity)> Items);
