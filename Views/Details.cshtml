@@ -1,0 +1,10 @@
+﻿@model UIShoeStoreAPI.Models.Product
+@{
+    ViewBag.Title = "Chi tiết sản phẩm";
+}
+<h2>@Model.Name</h2>
+<img src="@Model.ImageUrl" class="img-thumbnail" width="300" />
+<p>@Model.Description</p>
+<p><strong>Giá: </strong>@Model.Price $</p>
+<a href="@Url.Action("Index", "Products")" class="btn btn-secondary">Quay lại</a>
+<button class="btn btn-success">Thêm vào giỏ hàng</button>

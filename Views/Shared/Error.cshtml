@@ -1,0 +1,17 @@
+﻿@model UIShoesStroreAPI.Models.ErrorViewModel
+
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1 class="text-danger">Lỗi</h1>
+<h2 class="text-danger">Đã xảy ra lỗi khi xử lý yêu cầu của bạn.</h2>
+
+@if (Model?.ShowRequestId == true)
+{
+    <p>
+        <strong>Mã lỗi:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+

@@ -1,0 +1,13 @@
+﻿@{
+    ViewBag.Title = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="text-center mt-5">
+    <h1>Chào mừng đến với  Shoe Store</h1>
+    <p class="lead">Nơi bạn tìm thấy những đôi giày hot nhất hiện nay!</p>
+
+    <a href="@Url.Action("Index", "Products")" class="btn btn-primary btn-lg mt-3">
+        Xem sản phẩm
+    </a>
+</div>
