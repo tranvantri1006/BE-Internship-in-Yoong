@@ -14,6 +14,7 @@ public class User
     public string Role { get; set; } = "customer";
 }
 
+
 public record LoginRequest(string Email, string Password);
 public record UserRegisterRequest(string Email, string Password);
 // 🔧 Custom Authentication Handler ngay trong Program.cs

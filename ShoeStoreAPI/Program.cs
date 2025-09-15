@@ -9,6 +9,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 using Microsoft.AspNetCore.Authentication;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
+using CsvHelper;
+using System.Globalization;
+using Google.Apis.Auth;
+using Microsoft.Extensions.FileProviders;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +62,7 @@ app.UseHttpsRedirection();
 // ✅ Middleware order: Authentication trước, Authorization sau
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles(); // Cho phép truy cập wwwroot
 // Endpoint test
 app.MapGet("/ping", () => "pong").AllowAnonymous();
 
@@ -66,6 +75,11 @@ using (var scope = app.Services.CreateScope())
     Seed.EnsureSeed(db);
 }
 
+var users = new List<User>
+{
+    new User { Id = 1, Email = "john@example.com", PasswordHash = "123456", Role = "User" },
+    new User { Id = 2, Email = "admin@example.com", PasswordHash = "abcdef", Role = "Admin" }
+};
 
 
 // DTOs
@@ -268,10 +282,232 @@ app.MapGet("/products/search/{keyword}", async (string keyword, AppDbContext db)
 
 return Results.Ok(products);
 });
+// Danh sách token bị revoke (blacklist)
+List<string> revokedTokens = new List<string>();
+
+// API Logout
+app.MapPost("/api/logout", (HttpRequest request) =>
+{
+    var authHeader = request.Headers["Authorization"].ToString();
+    if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+    {
+        return Results.Unauthorized();
+    }
+
+    var token = authHeader.Substring("Bearer ".Length).Trim();
+
+    // Lưu token vào danh sách bị revoke
+    revokedTokens.Add(token);
+
+    return Results.Ok(new { message = "Đăng xuất thành công" });
+});
+app.MapPost("/api/upload", async (IFormFile file) =>
+{
+    if (file == null || file.Length == 0)
+        return Results.BadRequest("No file uploaded.");
+
+    // Thư mục lưu file
+    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+
+    if (!Directory.Exists(uploadPath))
+    {
+        Directory.CreateDirectory(uploadPath);
+    }
+
+    // Tạo tên file duy nhất
+    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+    var filePath = Path.Combine(uploadPath, fileName);
+
+    using (var stream = new FileStream(filePath, FileMode.Create))
+    {
+        await file.CopyToAsync(stream);
+    }
+
+    // Trả về URL để client dùng
+    var fileUrl = $"/uploads/{fileName}";
+    return Results.Ok(new { Url = fileUrl });
+});
+// API Export sản phẩm ra JSON file
+
+
+// API Import sản phẩm từ JSON file
+app.MapPost("/api/products/import", () =>
+{
+    if (!File.Exists("products_export.json"))
+        return Results.NotFound("Không tìm thấy file products_export.json để import");
+
+    var json = File.ReadAllText("products_export.json");
+    var imported = JsonSerializer.Deserialize<List<Product>>(json);
+
+    if (imported == null)
+        return Results.BadRequest("File JSON không hợp lệ");
+
+    
+    return Results.Ok(new { Message = "Import thành công", Count = imported.Count });
+});
+// API Import sản phẩm từ file CSV
+app.MapPost("/api/products/import-csv", () =>
+{
+    if (!File.Exists("products_export.csv"))
+        return Results.NotFound("Không tìm thấy file products_export.csv để import");
+
+    using var reader = new StreamReader("products_export.csv");
+    using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+    var imported = csv.GetRecords<Product>().ToList();
+
+
+    return Results.Ok(new { Message = "Import CSV thành công", Count = imported.Count });
+});
+app.MapGet("/api/users", () =>
+{
+    var result= users.Select(u => new
+    {
+        u.Id,
+        u.Email,
+        u.Role
+    });
+
+    return Results.Ok(result);
+});
+// Cập nhật thông tin cá nhân User
+app.MapPut("/api/users/{id}", (int id, User updatedUser) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    if (user == null)
+        return Results.NotFound("User không tồn tại");
+
+    // Cập nhật Email (nếu có truyền)
+    if (!string.IsNullOrEmpty(updatedUser.Email))
+        user.Email = updatedUser.Email;
+
+    // Cập nhật mật khẩu (nếu có truyền)
+    if (!string.IsNullOrEmpty(updatedUser.PasswordHash))
+        user.PasswordHash = updatedUser.PasswordHash;
+
+    // Cập nhật Avatar (nếu có truyền)
+   
+
+    // Không cho người dùng tự cập nhật Role (chỉ Admin mới có quyền)
+    // => Nếu muốn cho phép thì mở comment dòng sau
+    // user.Role = updatedUser.Role;
+
+    return Results.Ok(new
+    {
+        Message = "Cập nhật thông tin thành công",
+        User = user
+    });
+});
+// API Login Google
+app.MapPost("/api/auth/google", async (HttpRequest request) =>
+{
+    try
+    {
+        // Lấy token từ body
+        using var reader = new StreamReader(request.Body);
+        var body = await reader.ReadToEndAsync();
+        var token = System.Text.Json.JsonDocument.Parse(body)
+                                                .RootElement
+                                                .GetProperty("idToken")
+                                                .GetString();
+
+        if (string.IsNullOrEmpty(token))
+            return Results.BadRequest("Thiếu Google ID Token");
+
+        // ✅ Verify token với Google
+        var payload = await GoogleJsonWebSignature.ValidateAsync(token);
+
+        // Kiểm tra user trong hệ thống
+        var user = users.FirstOrDefault(u => u.Email == payload.Email);
+        if (user == null)
+        {
+            // Nếu user chưa có thì tạo mới
+            user = new User
+            {
+                Id = users.Count + 1,
+                Email = payload.Email,
+                PasswordHash = "", // không cần vì login Google
+                Role = "User"
+            };
+            users.Add(user);
+        }
+
+        // Trả về thông tin user + payload
+        return Results.Ok(new
+        {
+            message = "Đăng nhập Google thành công",
+            user = new { user.Id, user.Email, user.Role },
+            googleInfo = payload
+        });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+// API Dashboard
+app.MapGet("/api/dashboard", async (AppDbContext db) =>
+{
+    var totalUsers = await db.Users.CountAsync();
+    var totalProducts = await db.Products.CountAsync();
+    var totalOrders = await db.Orders.CountAsync();
+   
+
+    return Results.Ok(new
+    {
+        TotalUsers = totalUsers,
+        TotalProducts = totalProducts,
+        TotalOrders = totalOrders,
+        
+    });
+});
+
+app.MapDelete("/api/users/{id}", (int id) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    if (user == null)
+    {
+        return Results.NotFound(new { message = "Không tìm thấy user" });
+    }
+
+    users.Remove(user);
+
+    return Results.Ok(new { message = $"User {id} đã được xóa thành công" });
+});
+//Lấy User theo Id   
+app.MapGet("/api/users/{id}", (int id) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    return user is null
+        ? Results.NotFound(new { message = "Không tìm thấy user" })
+        : Results.Ok(user);
+});
+//Tạo User  
+app.MapPost("/api/users", (User newUser) =>
+{
+    newUser.Id = users.Count > 0 ? users.Max(u => u.Id) + 1 : 1;
+    users.Add(newUser);
+    return Results.Created($"/api/users/{newUser.Id}", newUser);
+});
+// Search user theo email
+app.MapGet("/api/users/search-by-email", (string email) =>
+{
+    var user = users.FirstOrDefault(u =>
+        u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+
+    return user is null
+        ? Results.NotFound(new { message = "Không tìm thấy user với email này" })
+        : Results.Ok(user);
+});
 
 
 
-app.Run();  
+
+
+app.Run();
+
+
+
+
 
 
 
