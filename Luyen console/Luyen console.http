@@ -1,0 +1,6 @@
+@Luyen_console_HostAddress = http://localhost:5114
+
+GET {{Luyen_console_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

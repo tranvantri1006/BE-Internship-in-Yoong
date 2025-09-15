@@ -1,0 +1,32 @@
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\appsettings.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Luyen console.exe
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Luyen console.deps.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Luyen console.runtimeconfig.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Luyen console.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Luyen console.pdb
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.csproj.AssemblyReference.cache
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.AssemblyInfoInputs.cache
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.AssemblyInfo.cs
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.csproj.CoreCompileInputs.cache
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets\msbuild.Luyen console.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets\msbuild.build.Luyen console.props
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.Luyen console.props
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.Luyen console.props
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\scopedcss\bundle\Luyen console.styles.css
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen co.6A327911.Up2Date
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\refint\Luyen console.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.pdb
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.genruntimeconfig.cache
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\ref\Luyen console.dll

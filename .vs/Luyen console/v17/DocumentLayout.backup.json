@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{AE96F038-8630-41C5-84B6-BAC521F8BECB}|Luyen console\\Luyen console.csproj|c:\\users\\asia\\source\\repos\\luyen console\\luyen console\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{AE96F038-8630-41C5-84B6-BAC521F8BECB}|Luyen console\\Luyen console.csproj|solutionrelative:luyen console\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\Luyen console\\Program.cs",
+              "RelativeDocumentMoniker": "Luyen console\\Program.cs",
+              "ToolTip": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\Luyen console\\Program.cs",
+              "RelativeToolTip": "Luyen console\\Program.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAgwH4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-25T08:56:09.084Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
