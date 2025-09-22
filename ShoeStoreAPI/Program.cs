@@ -78,8 +78,26 @@ using (var scope = app.Services.CreateScope())
 var users = new List<User>
 {
     new User { Id = 1, Email = "john@example.com", PasswordHash = "123456", Role = "User" },
-    new User { Id = 2, Email = "admin@example.com", PasswordHash = "abcdef", Role = "Admin" }
+    new User { Id = 2, Email = "admin@example.com", PasswordHash = "abcdef", Role = "Admin" },
+    new User { Id = 3, Email = "NgocLinh@example.com", PasswordHash = "123456", Role = "User" }
 };
+var promotions = new List<Promotion>
+{
+    new Promotion { Id = 1, Title = "Sale 50% Giày Nike", Description = "Giảm giá đặc biệt cho khách hàng Quảng Ninh", Location = "Quảng Ninh", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(7)},
+    new Promotion { Id = 2, Title = "Sale 30% Adidas", Description = "Chương trình dành cho Thanh Hóa", Location = "Thanh Hóa", StartDate = DateTime.UtcNow, EndDate = DateTime.UtcNow.AddDays(5)}
+};
+// Mock data sản phẩm
+var products = new List<Product>
+{
+    new Product { Id = 1, Name = "Nike Air", Price = 200 },
+    new Product { Id = 2, Name = "Adidas Superstar", Price = 180 },
+    new Product { Id = 3, Name = "Puma Classic", Price = 150 }
+};
+// Mock danh sách tin nhắn (lưu tạm trong bộ nhớ)
+var chatMessages = new List<ChatMessage>();
+// Danh sách quản lý riêng user thân thiện từ Quảng Ninh
+var friendlyUserIds = new List<int>();
+
 
 
 // DTOs
@@ -498,6 +516,194 @@ app.MapGet("/api/users/search-by-email", (string email) =>
         ? Results.NotFound(new { message = "Không tìm thấy user với email này" })
         : Results.Ok(user);
 });
+// ✅ Lấy thông tin cá nhân (Profile) mà không có IsBlocked
+app.MapGet("/api/users/{id}/profile", (int id) =>
+{
+    var user = users.Find(u => u.Id == id);
+    if (user == null) return Results.NotFound("User không tồn tại");
+
+    // Trả về thông tin cơ bản, không show password
+    var profile = new
+    {
+        user.Id,
+        user.Email,
+        user.Role
+    };
+
+    return Results.Ok(profile);
+});
+// ✅ Lấy danh sách khuyến mãi theo địa phương
+app.MapGet("/api/promotions/{location}", (string location) =>
+{
+    var result = promotions.FindAll(p => p.Location.ToLower() == location.ToLower());
+    if (result.Count == 0) return Results.NotFound("Không có khuyến mãi cho khu vực này");
+    return Results.Ok(result);
+});
+
+// ✅ Thêm chương trình khuyến mãi mới
+app.MapPost("/api/promotions", (Promotion promo) =>
+{
+    promo.Id = promotions.Count + 1;
+    promotions.Add(promo);
+    return Results.Created($"/api/promotions/{promo.Id}", promo);
+});
+// ✅ Đổi mật khẩu người dùng
+app.MapPost("/api/users/{id}/change-password", (int id, ChangePasswordRequest req) =>
+{
+var user = users.Find(u => u.Id == id);
+if (user == null) return Results.NotFound("User không tồn tại");
+
+// Kiểm tra mật khẩu cũ
+if (user.PasswordHash != req.OldPassword)
+{
+return Results.BadRequest("Mật khẩu cũ không đúng!");
+}
+
+// Cập nhật mật khẩu mới
+user.PasswordHash = req.NewPassword;
+
+return Results.Ok(new { message = "Đổi mật khẩu thành công!" });
+});
+// ✅ Reset mật khẩu qua email
+app.MapPost("/api/users/reset-password", (ResetPasswordRequest req) =>
+{
+    var user = users.Find(u => u.Email.ToLower() == req.Email.ToLower());
+    if (user == null) return Results.NotFound("Không tìm thấy user với email này");
+
+    // Tạo mật khẩu mới (ở đây đơn giản là random 6 ký tự)
+    var newPassword = Guid.NewGuid().ToString().Substring(0, 6);
+    user.PasswordHash = newPassword;
+
+    // Thực tế: gửi mật khẩu này qua email cho user
+    return Results.Ok(new { message = "Đã reset mật khẩu. Kiểm tra email của bạn.", newPassword });
+});
+// Danh sách lưu trạng thái active
+var activeUsers = new HashSet<int>();
+var userStatus = new Dictionary<int, bool>();
+
+// API kích hoạt tài khoản
+app.MapPost("/api/users/activate", (int userId) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == userId);
+    if (user == null)
+    {
+        return Results.NotFound(new { message = "User không tồn tại" });
+    }
+
+    if (activeUsers.Contains(userId))
+    {
+        return Results.BadRequest(new { message = "Tài khoản đã được kích hoạt" });
+    }
+
+    activeUsers.Add(userId);
+
+    return Results.Ok(new
+    {
+        message = "Kích hoạt thành công",
+        userId = user.Id,
+        email = user.Email,
+        role = user.Role,
+        active = true
+    });
+});
+// API khóa tài khoản
+app.MapPost("/api/users/deactivate", (int userId) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == userId);
+    if (user == null)
+        return Results.NotFound(new { message = "User không tồn tại" });
+
+    userStatus[userId] = false;
+
+    return Results.Ok(new
+    {
+        message = "Tài khoản đã bị khóa",
+        userId = user.Id,
+        email = user.Email,
+        role = user.Role,
+        active = false
+    });
+});
+
+// API xem trạng thái user
+app.MapGet("/api/users/status/{id}", (int id) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    if (user == null)
+        return Results.NotFound(new { message = "User không tồn tại" });
+
+    bool isActive = userStatus.ContainsKey(id) && userStatus[id];
+
+    return Results.Ok(new
+    {
+        userId = user.Id,
+        email = user.Email,
+        role = user.Role,
+        active = isActive
+    });
+});
+// API gửi tin nhắn
+app.MapPost("/api/chat/send", (int userId, string userName, string message) =>
+{
+    if (string.IsNullOrWhiteSpace(message))
+        return Results.BadRequest(new { message = "Tin nhắn không được để trống" });
+
+    var newMsg = new ChatMessage
+    {
+        Id = chatMessages.Count + 1,
+        UserId = userId,
+        UserName = userName,
+        Message = message,
+        SentAt = DateTime.UtcNow
+    };
+
+    chatMessages.Add(newMsg);
+
+    return Results.Ok(new
+    {
+        message = "Gửi thành công",
+        data = newMsg
+    });
+});
+// API lấy danh sách tin nhắn
+app.MapGet("/api/chat/messages", () =>
+{
+    return Results.Ok(chatMessages);
+});
+// API: Thêm user thân thiện (giả sử ta nhập id và confirm họ từ Quảng Ninh)
+app.MapPost("/users/friendly", (int id) =>
+{
+    var user = users.FirstOrDefault(u => u.Id == id);
+    if (user == null)
+        return Results.NotFound("Không tìm thấy user!");
+
+    if (!friendlyUserIds.Contains(id))
+    {
+        friendlyUserIds.Add(id);
+        return Results.Ok($"User {user.Email} đã được thêm vào danh sách thân thiện (Quảng Ninh).");
+    }
+
+    return Results.BadRequest("User này đã được đánh dấu thân thiện rồi!");
+});
+
+// API: Xem danh sách user thân thiện
+app.MapGet("/users/friendly", () =>
+{
+    var friendlyUsers = users.Where(u => friendlyUserIds.Contains(u.Id)).ToList();
+    return Results.Ok(friendlyUsers);
+});
+app.MapDelete("/users/friendly/{id}", (int id) =>
+{
+    if (!friendlyUserIds.Contains(id))
+        return Results.NotFound("User này không có trong danh sách thân thiện!");
+
+    friendlyUserIds.Remove(id);
+    return Results.Ok($"User {id} đã bị xóa khỏi danh sách thân thiện.");
+});
+
+
+
+
 
 
 
