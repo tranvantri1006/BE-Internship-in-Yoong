@@ -30,3 +30,4 @@ C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\refint\L
 C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.pdb
 C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.genruntimeconfig.cache
 C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\ref\Luyen console.dll
+C:\Users\ASIA\source\repos\Luyen console\Luyen console\obj\Debug\net8.0\Luyen console.sourcelink.json

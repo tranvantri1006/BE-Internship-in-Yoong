@@ -1,0 +1,15 @@
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\bin\Debug\net8.0\LuyenConsoleApp.exe
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\bin\Debug\net8.0\LuyenConsoleApp.deps.json
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\bin\Debug\net8.0\LuyenConsoleApp.runtimeconfig.json
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\bin\Debug\net8.0\LuyenConsoleApp.dll
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\bin\Debug\net8.0\LuyenConsoleApp.pdb
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.AssemblyInfoInputs.cache
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.AssemblyInfo.cs
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.csproj.CoreCompileInputs.cache
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.sourcelink.json
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.dll
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\refint\LuyenConsoleApp.dll
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.pdb
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\LuyenConsoleApp.genruntimeconfig.cache
+C:\Users\ASIA\source\repos\Luyen console\LuyenConsoleApp\obj\Debug\net8.0\ref\LuyenConsoleApp.dll

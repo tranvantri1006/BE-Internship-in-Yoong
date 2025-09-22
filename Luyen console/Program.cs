@@ -86,6 +86,27 @@ class Program
 
         cart.Clear(); // Xóa giỏ hàng sau khi thanh toán
     }
+    static void SearchProduct()
+    {
+        Console.Write("Nhập tên giày cần tìm: ");
+        string keyword = Console.ReadLine().ToLower();
+
+        var results = products.FindAll(p => p.Name.ToLower().Contains(keyword));
+
+        if (results.Count > 0)
+        {
+            Console.WriteLine("=== Kết quả tìm kiếm ===");
+            foreach (var p in results)
+            {
+                Console.WriteLine($"{p.Id}. {p.Name} - ${p.Price}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Không tìm thấy sản phẩm nào!");
+        }
+    } 
+
 
     static void Main(string[] args)
     {
@@ -97,8 +118,9 @@ class Program
             Console.WriteLine("3. Xem giỏ hàng");
             Console.WriteLine("4. Thoát");
             Console.WriteLine("5. Thanh toán");
+            Console.WriteLine("6. Tìm kiếm sản phẩm");
             Console.Write("Chọn chức năng: ");
-
+             
             string choice = Console.ReadLine();
 
             switch (choice)
@@ -118,6 +140,11 @@ class Program
                 case "5":
                     Checkout();
                     break;
+                case "6":
+                    SearchProduct();
+                    break;
+            
+                     
                 default:
                     Console.WriteLine("Chọn chức năng không hợp lệ!");
                     break;

@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9623A7E4-EE58-43DC-9475-8709B64BA66F}|LuyenConsoleApp\\LuyenConsoleApp.csproj|c:\\users\\asia\\source\\repos\\luyen console\\luyenconsoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9623A7E4-EE58-43DC-9475-8709B64BA66F}|LuyenConsoleApp\\LuyenConsoleApp.csproj|solutionrelative:luyenconsoleapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{AE96F038-8630-41C5-84B6-BAC521F8BECB}|Luyen console\\Luyen console.csproj|c:\\users\\asia\\source\\repos\\luyen console\\luyen console\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{AE96F038-8630-41C5-84B6-BAC521F8BECB}|Luyen console\\Luyen console.csproj|solutionrelative:luyen console\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -20,14 +24,26 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\LuyenConsoleApp\\Program.cs",
+              "RelativeDocumentMoniker": "LuyenConsoleApp\\Program.cs",
+              "ToolTip": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\LuyenConsoleApp\\Program.cs",
+              "RelativeToolTip": "LuyenConsoleApp\\Program.cs",
+              "ViewState": "AgIAALcAAAAAAAAAAAAqwMMAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-19T06:59:23.17Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\Luyen console\\Program.cs",
               "RelativeDocumentMoniker": "Luyen console\\Program.cs",
               "ToolTip": "C:\\Users\\ASIA\\source\\repos\\Luyen console\\Luyen console\\Program.cs",
               "RelativeToolTip": "Luyen console\\Program.cs",
-              "ViewState": "AgIAAFYAAAAAAAAAAAAgwH4AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAHYAAAAAAAAAAAAAAA0AAAA1AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-25T08:56:09.084Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-17T10:40:31.396Z"
             }
           ]
         }
