@@ -97,6 +97,24 @@ var products = new List<Product>
 var chatMessages = new List<ChatMessage>();
 // Danh sách quản lý riêng user thân thiện từ Quảng Ninh
 var friendlyUserIds = new List<int>();
+// Fake data danh sách thông báo
+List<Notification> notifications = new List<Notification>
+{
+    new Notification { Id = 1, Title = "Khuyến mãi", Message = "Giảm giá 20% tất cả giày Adidas!", CreatedAt = DateTime.Now.AddDays(-1) },
+    new Notification { Id = 2, Title = "Sản phẩm mới", Message = "Nike Air Zoom mới đã về!", CreatedAt = DateTime.Now }
+};
+// Fake Feedback
+List<Feedback> feedbacks = new List<Feedback>
+{
+    new Feedback { Id = 1, UserId = 101, UserName = "Nguyen Van A", ProductId = 1, Content = "Giày đẹp, đi êm chân", Rating = 5, CreatedAt = DateTime.Now.AddHours(-5) },
+    new Feedback { Id = 2, UserId = 102, UserName = "Tran Thi B", ProductId = 2, Content = "Hơi chật, nhưng chất liệu tốt", Rating = 4, CreatedAt = DateTime.Now.AddHours(-2) }
+};
+// Fake Orders và OrderItems (lưu tạm trong bộ nhớ)
+List<Order> orders = new();
+List<OrderItem> orderItems = new();
+
+
+
 
 
 
@@ -700,6 +718,212 @@ app.MapDelete("/users/friendly/{id}", (int id) =>
     friendlyUserIds.Remove(id);
     return Results.Ok($"User {id} đã bị xóa khỏi danh sách thân thiện.");
 });
+// API xem tất cả thông báo
+app.MapGet("/api/notifications", () =>
+{
+    return Results.Ok(notifications.OrderByDescending(n => n.CreatedAt));
+});
+
+// API xem chi tiết thông báo theo Id
+app.MapGet("/api/notifications/{id}", (int id) =>
+{
+    var noti = notifications.FirstOrDefault(n => n.Id == id);
+    if (noti == null) return Results.NotFound("Thông báo không tồn tại!");
+
+    noti.IsRead = true; // đánh dấu đã đọc
+    return Results.Ok(noti);
+});
+
+// API đánh dấu tất cả thông báo đã đọc
+app.MapPut("/api/notifications/mark-all-read", () =>
+{
+    foreach (var noti in notifications)
+        noti.IsRead = true;
+
+    return Results.Ok("Tất cả thông báo đã được đánh dấu là đã đọc.");
+});
+// 4. Tạo thông báo mới
+app.MapPost("/api/notifications", (Notification newNoti) =>
+{
+    newNoti.Id = notifications.Any() ? notifications.Max(n => n.Id) + 1 : 1;
+    newNoti.CreatedAt = DateTime.Now;
+    newNoti.IsRead = false;
+
+    notifications.Add(newNoti);
+    return Results.Created($"/api/notifications/{newNoti.Id}", newNoti);
+});
+
+// 5. Cập nhật thông báo
+app.MapPut("/api/notifications/{id}", (int id, Notification updatedNoti) =>
+{
+    var noti = notifications.FirstOrDefault(n => n.Id == id);
+    if (noti == null) return Results.NotFound("Thông báo không tồn tại!");
+
+    noti.Title = updatedNoti.Title;
+    noti.Message = updatedNoti.Message;
+    return Results.Ok(noti);
+});
+// 7. Xóa thông báo
+app.MapDelete("/api/notifications/{id}", (int id) =>
+{
+    var noti = notifications.FirstOrDefault(n => n.Id == id);
+    if (noti == null) return Results.NotFound("Thông báo không tồn tại!");
+
+    notifications.Remove(noti);
+    return Results.Ok($"Đã xóa thông báo {id}");
+});
+#region API Feedback
+
+// Xem tất cả feedback
+app.MapGet("/api/feedbacks", () =>
+{
+    var result = feedbacks.Select(f => new
+    {
+        f.Id,
+        f.UserId,
+        f.UserName,
+        f.ProductId,
+        Product = products.FirstOrDefault(p => p.Id == f.ProductId)?.Name,
+        f.Content,
+        f.Rating,
+        f.CreatedAt
+    });
+
+    return Results.Ok(result);
+});
+
+// Xem feedback theo productId
+app.MapGet("/api/feedbacks/by-product/{productId}", (int productId) =>
+{
+    var result = feedbacks
+        .Where(f => f.ProductId == productId)
+        .Select(f => new
+        {
+            f.Id,
+            f.UserId,
+            f.UserName,
+            f.Content,
+            f.Rating,
+            f.CreatedAt
+        });
+
+    if (!result.Any()) return Results.NotFound("Chưa có feedback cho sản phẩm này.");
+    return Results.Ok(result);
+});
+
+// Xem chi tiết 1 feedback
+app.MapGet("/api/feedbacks/{id}", (int id) =>
+{
+    var fb = feedbacks.FirstOrDefault(f => f.Id == id);
+    if (fb == null) return Results.NotFound("Feedback không tồn tại!");
+
+    var result = new
+    {
+        fb.Id,
+        fb.UserId,
+        fb.UserName,
+        fb.ProductId,
+        Product = products.FirstOrDefault(p => p.Id == fb.ProductId)?.Name,
+        fb.Content,
+        fb.Rating,
+        fb.CreatedAt
+    };
+
+    return Results.Ok(result);
+});
+
+#endregion
+// Lọc feedback theo userId
+app.MapGet("/api/feedbacks/filter/user/{userId}", (int userId) =>
+{
+    var result = feedbacks
+        .Where(f => f.UserId == userId)
+        .Select(f => new
+        {
+            f.Id,
+            f.UserId,
+            f.UserName,
+            f.ProductId,
+            f.Content,
+            f.Rating,
+            f.CreatedAt
+        });
+
+    if (!result.Any()) return Results.NotFound("Người dùng này chưa có feedback.");
+    return Results.Ok(result);
+});
+
+// Lọc feedback trong khoảng thời gian
+app.MapGet("/api/feedbacks/filter/date", (DateTime from, DateTime to) =>
+{
+    var result = feedbacks
+        .Where(f => f.CreatedAt >= from && f.CreatedAt <= to)
+        .Select(f => new
+        {
+            f.Id,
+            f.UserId,
+            f.UserName,
+            f.ProductId,
+            f.Content,
+            f.Rating,
+            f.CreatedAt
+        });
+
+    if (!result.Any()) return Results.NotFound("Không có feedback nào trong khoảng thời gian này.");
+    return Results.Ok(result);
+});
+// Tạo feedback mới
+app.MapPost("/api/feedback", (Feedback fb) =>
+{
+    fb.Id = feedbacks.Count + 1;
+    fb.CreatedAt = DateTime.Now;
+    feedbacks.Add(fb);
+    return Results.Ok(fb);
+});
+
+// Cập nhật feedback
+app.MapPut("/api/feedback/{id}", (int id, Feedback updated) =>
+{
+    var fb = feedbacks.FirstOrDefault(f => f.Id == id);
+    if (fb == null) return Results.NotFound("Feedback không tồn tại");
+
+    fb.Content = updated.Content;
+    fb.UserName = updated.UserName;
+    fb.UserId = updated.UserId;
+    return Results.Ok(fb);
+});
+
+// Xóa feedback
+app.MapDelete("/api/feedback/{id}", (int id) =>
+{
+    var fb = feedbacks.FirstOrDefault(f => f.Id == id);
+    if (fb == null) return Results.NotFound("Feedback không tồn tại");
+
+    feedbacks.Remove(fb);
+    return Results.Ok($"Đã xóa feedback {id}");
+});
+
+// Tìm kiếm feedback theo từ khóa
+app.MapGet("/api/feedback/search", (string keyword) =>
+{
+    var result = feedbacks
+        .Where(f => f.Content.Contains(keyword, StringComparison.OrdinalIgnoreCase)
+                 || f.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    return Results.Ok(result);
+});
+
+
+
+
+
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+
 
 
 
